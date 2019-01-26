@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright 2018 Mass Open Cloud
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,19 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import sys
+from adjutant.api.v1.models import register_taskview_class
+from adjutant.actions.v1.models import register_action_class
+from adjutant.actions.v1.serializers import NewUserSerializer
 
-if __name__ == "__main__":
-    #os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project.settings")
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "adjutant.settings")
+from adjutant_moc import actions
+from adjutant_moc import tasks
 
-    from adjutant import test_settings
-    test_settings.ADDITIONAL_APPS.append("adjutant_moc")
+register_action_class(actions.ExternalUserAction, NewUserSerializer)
+register_taskview_class(r'^actions/InviteUser/?$', tasks.InviteExternalUser)
 
-    test_settings.ACTIVE_TASKVIEWS.remove("InviteUser")
-    test_settings.ACTIVE_TASKVIEWS.append("InviteExternalUser")
-
-    from django.core.management import execute_from_command_line
-
-    execute_from_command_line(sys.argv)
+register_taskview_class(
+    r'^openstack/users/?$', tasks.InviteExternalUser)  # this handles both invite and list
